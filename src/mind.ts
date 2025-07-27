@@ -89,7 +89,7 @@ TreeNode.config({
     label: {
       textWrap: {
         width: 100, // 固定宽度，文字超长时换行
-        height: 40,
+        height: '100%', // 使用百分比高度，自适应节点高度
         ellipsis: false, // 不使用省略号，允许换行
       },
       textAnchor: 'middle',
@@ -425,6 +425,19 @@ function updateContainerSize() {
   }
 }
 
+// 根据文本长度计算节点高度
+function calculateNodeHeight(text: string): number {
+  const baseHeight = 40
+  const maxWidth = 100 // 与textWrap width保持一致
+  const fontSize = 12
+  const charWidth = fontSize * 0.6 // 估算字符宽度
+  const charsPerLine = Math.floor(maxWidth / charWidth)
+  const estimatedLines = Math.ceil(text.length / charsPerLine)
+  
+  // 每行约16px高度，最小40px
+  return Math.max(baseHeight, estimatedLines * 20 + 20)
+}
+
 // 计算新节点的位置（临时位置，会被布局算法重新计算）
 function calculateNewNodePosition(parentNode: MindMapNode, isChild: boolean = true): { x: number, y: number } {
   if (isChild) {
@@ -453,14 +466,23 @@ function editNodeText(nodeId: string) {
   const newText = prompt('请输入新的节点文本:', currentText.toString())
   
   if (newText !== null && newText.trim() !== '') {
+    const trimmedText = newText.trim()
     // 更新数据
-    mindmap.nodes[nodeIndex].attrs.label.textWrap.text = newText.trim()
+    mindmap.nodes[nodeIndex].attrs.label.textWrap.text = trimmedText
+    
+    // 计算新的节点高度
+    const newHeight = calculateNodeHeight(trimmedText)
+    mindmap.nodes[nodeIndex].height = newHeight
     
     // 更新图形
     const graphNode = graph?.getCellById(nodeId) as TreeNode
     if (graphNode) {
-      graphNode.attr('label/textWrap/text', newText.trim())
+      graphNode.attr('label/textWrap/text', trimmedText)
+      graphNode.resize(mindmap.nodes[nodeIndex].width, newHeight)
     }
+    
+    // 重新布局以适应新的节点尺寸
+    autoLayout()
     
     // 保存到localStorage
     saveMindMapToStorage()
@@ -484,7 +506,7 @@ function addChildNode(parentId: string) {
     id: newNodeId,
     shape: 'tree-node',
     width: 120,
-    height: 40,
+    height: calculateNodeHeight(newText.trim() || '新节点'),
     leaf: true,
     attrs: {
       label: {
@@ -878,7 +900,7 @@ const mindmap: MindMapData = {
       "id": 9,
       "shape": "tree-node",
       "width": 120,
-      "height": 40,
+      "height": 60,
       "leaf": false,
       "attrs": {
         "label": {
@@ -900,7 +922,7 @@ const mindmap: MindMapData = {
       "id": 12,
       "shape": "tree-node",
       "width": 120,
-      "height": 40,
+      "height": 60,
       "leaf": false,
       "attrs": {
         "label": {
