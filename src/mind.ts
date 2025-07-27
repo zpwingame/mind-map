@@ -419,6 +419,9 @@ function editNodeText(nodeId: string) {
     if (graphNode) {
       graphNode.attr('label/textWrap/text', newText.trim())
     }
+    
+    // 保存到localStorage
+    saveMindMapToStorage()
   }
 }
 
@@ -557,6 +560,18 @@ function addChildNode(parentId: string) {
   
   // 执行自动布局
   autoLayout()
+  
+  // 自动调整视图以显示所有节点
+  setTimeout(() => {
+    graph!.zoomToFit({ 
+      padding: { top: 50, right: 50, bottom: 50, left: 50 },
+      maxScale: 1.0,
+      minScale: 0.1
+    })
+  }, 100)
+  
+  // 保存到localStorage
+  saveMindMapToStorage()
 }
 
 // 添加同级节点
@@ -660,6 +675,18 @@ function addSiblingNode(nodeId: string) {
   
   // 执行自动布局
   autoLayout()
+  
+  // 自动调整视图以显示所有节点
+  setTimeout(() => {
+    graph!.zoomToFit({ 
+      padding: { top: 50, right: 50, bottom: 50, left: 50 },
+      maxScale: 1.0,
+      minScale: 0.1
+    })
+  }, 100)
+  
+  // 保存到localStorage
+  saveMindMapToStorage()
 }
 
 // 删除节点
@@ -725,10 +752,20 @@ function deleteNode(nodeId: string) {
     }
   }
   
-  // 删除节点后不重新布局，保持其他节点位置不变
+  // 删除节点后重新调整视图以显示所有剩余节点
+  setTimeout(() => {
+    graph!.zoomToFit({ 
+      padding: { top: 50, right: 50, bottom: 50, left: 50 },
+      maxScale: 1.0,
+      minScale: 0.1
+    })
+  }, 100)
+  
+  // 保存到localStorage
+  saveMindMapToStorage()
 }
 
-const mindmap = {
+const mindmap: MindMapData = {
   "nodes": [
     // 根节点：创U速赢 (第0层)
     {
@@ -1271,6 +1308,58 @@ interface MindMapEdge {
   shape: string
 }
 
+interface MindMapData {
+  nodes: MindMapNode[]
+  edges: MindMapEdge[]
+}
+
+// localStorage相关常量
+const MINDMAP_STORAGE_KEY = 'mindmap_data'
+
+// 保存mindmap数据到localStorage
+function saveMindMapToStorage() {
+  try {
+    const data: MindMapData = {
+      nodes: [...mindmap.nodes],
+      edges: [...mindmap.edges]
+    }
+    localStorage.setItem(MINDMAP_STORAGE_KEY, JSON.stringify(data))
+    console.log('Mind map data saved to localStorage')
+  } catch (error) {
+    console.error('Failed to save mind map data to localStorage:', error)
+  }
+}
+
+// 从localStorage加载mindmap数据
+function loadMindMapFromStorage(): MindMapData | null {
+  try {
+    const savedData = localStorage.getItem(MINDMAP_STORAGE_KEY)
+    if (savedData) {
+      const data: MindMapData = JSON.parse(savedData)
+      console.log('Mind map data loaded from localStorage')
+      return data
+    }
+  } catch (error) {
+    console.error('Failed to load mind map data from localStorage:', error)
+  }
+  return null
+}
+
+// 初始化思维导图数据（优先从localStorage加载）
+function initMindMapData() {
+  const savedData = loadMindMapFromStorage()
+  if (savedData) {
+    // 使用保存的数据覆盖默认数据
+    mindmap.nodes = savedData.nodes
+    mindmap.edges = savedData.edges
+    console.log('Using saved mind map data from localStorage')
+  } else {
+    console.log('Using default mind map data')
+    // 首次加载时保存默认数据
+    saveMindMapToStorage()
+  }
+}
+
   // 初始化思维导图
 export function initMindMap() {
   const container = document.getElementById('container')
@@ -1278,6 +1367,9 @@ export function initMindMap() {
     console.error('Container element not found')
     return
   }
+
+  // 初始化数据（优先使用localStorage中的数据）
+  initMindMapData()
 
   // 创建Graph实例
   graph = new Graph({
@@ -1392,7 +1484,7 @@ export function initMindMap() {
       
       // 获取源节点的颜色
       const sourceNode = mindmap.nodes.find(node => node.id === edge.source)
-      if (sourceNode) {
+      if (sourceNode && sourceNode.attrs.body) {
         const bodyFill = sourceNode.attrs.body.fill
         if (bodyFill === '#FF6B6B') {
           strokeColor = '#FF6B6B' // 红色分支
@@ -1423,9 +1515,12 @@ export function initMindMap() {
   setTimeout(() => {
     const time = new Date().getTime() - start
     console.log(`Mind map loaded in ${time}ms`)
-    // 设置固定缩放级别和视图位置
-    graph!.zoom(1.0) // 100% 缩放，保持节点原始大小
-    graph!.translate(50, 50) // 设置固定的视图偏移量
+    // 自动调整视图以显示所有节点
+    graph!.zoomToFit({ 
+      padding: { top: 50, right: 50, bottom: 50, left: 50 },
+      maxScale: 1.0, // 最大缩放限制为100%，避免过度放大
+      minScale: 0.1  // 最小缩放限制，确保能看到所有内容
+    })
   }, 100)
 }
 
