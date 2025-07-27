@@ -18,6 +18,9 @@ function App() {
   return (
     <div className="app">
       <h1>思维导图展示</h1>
+      <div className="tips">
+        💡 操作提示: 鼠标拖动画布 | 鼠标滚轮缩放 | 右键节点打开菜单
+      </div>
       <div ref={containerRef} id="container" ></div>
     </div>
   )
