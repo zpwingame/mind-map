@@ -1,3 +1,31 @@
+<template>
+  <div class="app">
+    <h1>思维导图展示</h1>
+    <div class="tips">
+      💡 操作提示: 鼠标拖动画布 | 鼠标滚轮缩放 | 右键节点打开菜单
+    </div>
+    <div ref="containerRef" id="container"></div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { initMindMap } from './mind'
+
+const containerRef = ref<HTMLDivElement>()
+
+onMounted(() => {
+  // 确保容器元素存在后再初始化思维导图
+  if (containerRef.value) {
+    // 给DOM一点时间完全渲染
+    setTimeout(() => {
+      initMindMap()
+    }, 100)
+  }
+})
+</script>
+
+<style scoped>
 .app {
   width: 100vw;
   height: 100vh;
@@ -44,37 +72,38 @@
 }
 
 /* 思维导图节点样式 */
-.x6-node {
+:deep(.x6-node) {
   cursor: pointer;
 }
 
-.x6-node:hover {
+:deep(.x6-node:hover) {
   filter: brightness(1.1);
 }
 
 /* 思维导图边样式 */
-.x6-edge {
+:deep(.x6-edge) {
   transition: stroke-opacity 0.3s;
 }
 
-.x6-edge:hover {
+:deep(.x6-edge:hover) {
   stroke-opacity: 0.8;
 }
 
 /* 拖动相关样式 */
-.x6-graph-panning {
+:deep(.x6-graph-panning) {
   cursor: grabbing !important;
 }
 
-.x6-graph-panning .x6-node {
+:deep(.x6-graph-panning .x6-node) {
   cursor: grabbing !important;
 }
 
 /* 空白区域拖动提示 */
-.x6-graph svg {
+:deep(.x6-graph svg) {
   cursor: grab;
 }
 
-.x6-graph.x6-graph-panning svg {
+:deep(.x6-graph.x6-graph-panning svg) {
   cursor: grabbing;
 }
+</style> 
