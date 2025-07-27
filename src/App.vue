@@ -2,7 +2,7 @@
   <div class="app">
     <h1>思维导图展示</h1>
     <div class="tips">
-      💡 操作提示: 鼠标拖动画布 | 鼠标滚轮缩放 | 右键节点打开菜单
+      💡 操作提示: 使用滚动条查看内容 | 右键节点打开菜单
     </div>
     <div ref="containerRef" id="container"></div>
   </div>
@@ -63,12 +63,8 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background-color: #fafafa;
-  overflow: hidden;
-  cursor: grab;
-}
-
-#container:active {
-  cursor: grabbing;
+  overflow: auto;
+  cursor: default;
 }
 
 /* 思维导图节点样式 */
@@ -89,21 +85,8 @@ onMounted(() => {
   stroke-opacity: 0.8;
 }
 
-/* 拖动相关样式 */
-:deep(.x6-graph-panning) {
-  cursor: grabbing !important;
-}
-
-:deep(.x6-graph-panning .x6-node) {
-  cursor: grabbing !important;
-}
-
-/* 空白区域拖动提示 */
+/* 禁用拖动相关样式 */
 :deep(.x6-graph svg) {
-  cursor: grab;
-}
-
-:deep(.x6-graph.x6-graph-panning svg) {
-  cursor: grabbing;
+  cursor: default;
 }
 </style> 

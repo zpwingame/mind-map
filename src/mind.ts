@@ -377,10 +377,48 @@ function autoLayout() {
     }
   })
   
-  // 保持当前缩放级别和固定视图位置
-  setTimeout(() => {
-    // 不自动调整视图，保持用户当前的视图状态
-  }, 100)
+  // 布局完成，使用滚动条查看内容
+  
+  // 动态调整画布容器大小以显示滚动条
+  updateContainerSize()
+}
+
+// 动态调整画布容器大小以适应内容
+function updateContainerSize() {
+  if (!graph) return
+  
+  // 计算所有节点的边界
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  
+  mindmap.nodes.forEach(node => {
+    const x1 = node.x
+    const y1 = node.y
+    const x2 = node.x + node.width
+    const y2 = node.y + node.height
+    
+    minX = Math.min(minX, x1)
+    minY = Math.min(minY, y1)
+    maxX = Math.max(maxX, x2)
+    maxY = Math.max(maxY, y2)
+  })
+  
+  // 添加边距
+  const padding = 100
+  const contentWidth = Math.max(maxX - minX + padding * 2, 800) // 最小宽度800px
+  const contentHeight = Math.max(maxY - minY + padding * 2, 600) // 最小高度600px
+  
+  // 获取画布的SVG元素并设置其大小
+  const container = document.getElementById('container')
+  if (container) {
+    const svgElement = container.querySelector('svg')
+    if (svgElement) {
+      svgElement.style.width = contentWidth + 'px'
+      svgElement.style.height = contentHeight + 'px'
+      // 设置SVG的viewBox以确保内容正确显示
+      svgElement.setAttribute('width', contentWidth.toString())
+      svgElement.setAttribute('height', contentHeight.toString())
+    }
+  }
 }
 
 // 计算新节点的位置（临时位置，会被布局算法重新计算）
@@ -561,15 +599,6 @@ function addChildNode(parentId: string) {
   // 执行自动布局
   autoLayout()
   
-  // 自动调整视图以显示所有节点
-  setTimeout(() => {
-    graph!.zoomToFit({ 
-      padding: { top: 50, right: 50, bottom: 50, left: 50 },
-      maxScale: 1.0,
-      minScale: 0.1
-    })
-  }, 100)
-  
   // 保存到localStorage
   saveMindMapToStorage()
 }
@@ -676,15 +705,6 @@ function addSiblingNode(nodeId: string) {
   // 执行自动布局
   autoLayout()
   
-  // 自动调整视图以显示所有节点
-  setTimeout(() => {
-    graph!.zoomToFit({ 
-      padding: { top: 50, right: 50, bottom: 50, left: 50 },
-      maxScale: 1.0,
-      minScale: 0.1
-    })
-  }, 100)
-  
   // 保存到localStorage
   saveMindMapToStorage()
 }
@@ -752,14 +772,8 @@ function deleteNode(nodeId: string) {
     }
   }
   
-  // 删除节点后重新调整视图以显示所有剩余节点
-  setTimeout(() => {
-    graph!.zoomToFit({ 
-      padding: { top: 50, right: 50, bottom: 50, left: 50 },
-      maxScale: 1.0,
-      minScale: 0.1
-    })
-  }, 100)
+  // 更新容器大小以显示滚动条
+  updateContainerSize()
   
   // 保存到localStorage
   saveMindMapToStorage()
@@ -1383,10 +1397,9 @@ export function initMindMap() {
       vertexAddable: false,
       vertexDeletable: false,
     },
-    // 启用画布拖动
+    // 禁用画布拖动，使用滚动条代替
     panning: {
-      enabled: true,
-      eventTypes: ['leftMouseDown'], // 左键拖动画布
+      enabled: false,
     },
     connecting: {
       anchor: 'center',
@@ -1411,12 +1424,9 @@ export function initMindMap() {
     background: {
       color: '#FAFAFA',
     },
-    // 设置固定的缩放范围
+    // 完全禁用缩放功能
     mousewheel: {
-      enabled: true,
-      zoomAtMousePosition: true,
-      minScale: 0.5,
-      maxScale: 2,
+      enabled: false,
     },
     // 禁用自动调整
     autoResize: false,
@@ -1515,12 +1525,8 @@ export function initMindMap() {
   setTimeout(() => {
     const time = new Date().getTime() - start
     console.log(`Mind map loaded in ${time}ms`)
-    // 自动调整视图以显示所有节点
-    graph!.zoomToFit({ 
-      padding: { top: 50, right: 50, bottom: 50, left: 50 },
-      maxScale: 1.0, // 最大缩放限制为100%，避免过度放大
-      minScale: 0.1  // 最小缩放限制，确保能看到所有内容
-    })
+    // 初始化时更新容器大小
+    updateContainerSize()
   }, 100)
 }
 
