@@ -407,16 +407,20 @@ function updateContainerSize() {
   const contentWidth = Math.max(maxX - minX + padding * 2, 800) // 最小宽度800px
   const contentHeight = Math.max(maxY - minY + padding * 2, 600) // 最小高度600px
   
-  // 获取画布的SVG元素并设置其大小
+  // 调整Graph实例的大小
+  graph.resize(contentWidth, contentHeight)
+  
+  // 确保网格背景覆盖整个画布
   const container = document.getElementById('container')
   if (container) {
     const svgElement = container.querySelector('svg')
     if (svgElement) {
       svgElement.style.width = contentWidth + 'px'
       svgElement.style.height = contentHeight + 'px'
-      // 设置SVG的viewBox以确保内容正确显示
+      // 确保SVG占满容器并正确显示网格
       svgElement.setAttribute('width', contentWidth.toString())
       svgElement.setAttribute('height', contentHeight.toString())
+      svgElement.setAttribute('viewBox', `0 0 ${contentWidth} ${contentHeight}`)
     }
   }
 }
@@ -1385,9 +1389,16 @@ export function initMindMap() {
   // 初始化数据（优先使用localStorage中的数据）
   initMindMapData()
 
+  // 获取容器尺寸
+  const containerRect = container.getBoundingClientRect()
+  const containerWidth = container.clientWidth || 800
+  const containerHeight = container.clientHeight || 600
+
   // 创建Graph实例
   graph = new Graph({
     container: container,
+    width: containerWidth,
+    height: containerHeight,
     async: true,
     interacting: {
       nodeMovable: false,
@@ -1428,8 +1439,8 @@ export function initMindMap() {
     mousewheel: {
       enabled: false,
     },
-    // 禁用自动调整
-    autoResize: false,
+    // 启用自动调整以适应容器
+    autoResize: true,
   })
 
   // 添加节点折叠事件监听

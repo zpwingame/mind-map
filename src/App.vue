@@ -4,7 +4,9 @@
     <div class="tips">
       💡 操作提示: 使用滚动条查看内容 | 右键节点打开菜单
     </div>
+    <div style="height: 500px; overflow: scroll;">
     <div ref="containerRef" id="container"></div>
+    </div>
   </div>
 </template>
 
