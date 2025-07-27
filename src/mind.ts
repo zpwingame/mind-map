@@ -110,6 +110,55 @@ TreeNode.config({
       strokeWidth: 1.6,
     },
   },
+  // 定义连接点，让连线从按钮位置开始
+  ports: {
+    groups: {
+      right: {
+        position: {
+          name: 'absolute',
+          args: {
+            x: '100%',
+            y: '50%',
+          },
+        },
+        attrs: {
+          circle: {
+            r: 0, // 隐藏连接点
+            fill: 'transparent',
+            stroke: 'transparent',
+          },
+        },
+        markup: [
+          {
+            tagName: 'circle',
+            selector: 'circle',
+          },
+        ],
+      },
+      left: {
+        position: {
+          name: 'absolute',
+          args: {
+            x: 0,
+            y: '50%',
+          },
+        },
+        attrs: {
+          circle: {
+            r: 0, // 隐藏连接点
+            fill: 'transparent',
+            stroke: 'transparent',
+          },
+        },
+        markup: [
+          {
+            tagName: 'circle',
+            selector: 'circle',
+          },
+        ],
+      },
+    },
+  },
 })
 
 // 定义边
@@ -129,6 +178,12 @@ TreeEdge.config({
       targetMarker: null,
     },
   },
+  router: {
+    name: 'normal',
+  },
+  connector: {
+    name: 'normal',
+  },
 })
 
 // 注册
@@ -139,720 +194,506 @@ Edge.registry.register('tree-edge', TreeEdge, true)
 let graph: Graph | null = null
 
 const mindmap = {
-    "nodes": [
-      {
-        "id": 69,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "fathers"
-            }
+  "nodes": [
+    // 根节点：创U速赢 (第0层)
+    {
+      "id": 1,
+      "shape": "tree-node",
+      "width": 120,
+      "height": 50,
+      "leaf": false,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "创U速赢"
+          },
+          "fill": "#FFFFFF"
+        },
+        "body": {
+          "fill": "#5F95FF",
+          "stroke": "#5F95FF"
+        }
+      },
+      "x": 100,
+      "y": 300
+    },
+    // 主分支1：电联加微 (第1层)
+    {
+      "id": 2,
+      "shape": "tree-node",
+      "width": 100,
+      "height": 40,
+      "leaf": false,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "电联加微"
+          },
+          "fill": "#FFFFFF"
+        },
+        "body": {
+          "fill": "#FF6B6B",
+          "stroke": "#FF6B6B"
+        }
+      },
+      "x": 300,
+      "y": 200
+    },
+    // 主分支2：企微介绍 (第1层)
+    {
+      "id": 17,
+      "shape": "tree-node",
+      "width": 100,
+      "height": 40,
+      "leaf": false,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "企微介绍"
+          },
+          "fill": "#FFFFFF"
+        },
+        "body": {
+          "fill": "#4ECDC4",
+          "stroke": "#4ECDC4"
+        }
+      },
+      "x": 300,
+      "y": 400
+    },
+    // 电联加微子分支：邀约加微 (第2层)
+    {
+      "id": 3,
+      "shape": "tree-node",
+      "width": 100,
+      "height": 40,
+      "leaf": false,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "邀约加微"
+          },
+          "fill": "#FFFFFF"
+        },
+        "body": {
+          "fill": "#FF6B6B",
+          "stroke": "#FF6B6B"
+        }
+      },
+      "x": 500,
+      "y": 100
+    },
+    // 电联加微子分支：异议处理1 (第2层)
+    {
+      "id": 9,
+      "shape": "tree-node",
+      "width": 120,
+      "height": 40,
+      "leaf": false,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "异议处理1:客户没时间"
+          },
+          "fill": "#FFFFFF"
+        },
+        "body": {
+          "fill": "#FF6B6B",
+          "stroke": "#FF6B6B"
+        }
+      },
+      "x": 500,
+      "y": 200
+    },
+    // 电联加微子分支：异议处理2 (第2层)
+    {
+      "id": 12,
+      "shape": "tree-node",
+      "width": 140,
+      "height": 40,
+      "leaf": false,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "异议处理2:担心信息骚扰"
+          },
+          "fill": "#FFFFFF"
+        },
+        "body": {
+          "fill": "#FF6B6B",
+          "stroke": "#FF6B6B"
+        }
+      },
+      "x": 500,
+      "y": 300
+    },
+    // 企微介绍子分支：企业介绍 (第2层)
+    {
+      "id": 18,
+      "shape": "tree-node",
+      "width": 100,
+      "height": 40,
+      "leaf": false,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "企业介绍"
+          },
+          "fill": "#FFFFFF"
+        },
+        "body": {
+          "fill": "#4ECDC4",
+          "stroke": "#4ECDC4"
+        }
+      },
+      "x": 500,
+      "y": 400
+    },
+    // 邀约加微的详细信息 (第3层)
+    {
+      "id": 4,
+      "shape": "tree-node",
+      "width": 80,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "老客户"
           }
         },
-        "x": 35,
-        "y": 97
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 70,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "0"
-            }
+      "x": 700,
+      "y": 50
+    },
+    {
+      "id": 5,
+      "shape": "tree-node",
+      "width": 100,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "官方企业微信"
           }
         },
-        "x": 184,
-        "y": 97
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 71,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "id"
-            }
+      "x": 700,
+      "y": 100
+    },
+    {
+      "id": 6,
+      "shape": "tree-node",
+      "width": 80,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "邀请您加一下"
           }
         },
-        "x": 333,
-        "y": 13
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 72,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": 0
-            }
+      "x": 700,
+      "y": 150
+    },
+    {
+      "id": 7,
+      "shape": "tree-node",
+      "width": 80,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "添加链接"
           }
         },
-        "x": 503,
-        "y": 13
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 73,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "married"
-            }
+      "x": 700,
+      "y": 200
+    },
+    {
+      "id": 8,
+      "shape": "tree-node",
+      "width": 80,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "专属福利"
           }
         },
-        "x": 333,
-        "y": 69
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 74,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": false
-            }
+      "x": 700,
+      "y": 250
+    },
+    // 异议处理1的详细信息 (第3层)
+    {
+      "id": 10,
+      "shape": "tree-node",
+      "width": 80,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "特别快"
           }
         },
-        "x": 503,
-        "y": 69
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 75,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "name"
-            }
+      "x": 700,
+      "y": 300
+    },
+    {
+      "id": 11,
+      "shape": "tree-node",
+      "width": 80,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "专属福利"
           }
         },
-        "x": 333,
-        "y": 125
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 76,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "Eric Taylor"
-            }
+      "x": 700,
+      "y": 350
+    },
+    // 异议处理2的详细信息 (第3层)
+    {
+      "id": 13,
+      "shape": "tree-node",
+      "width": 100,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "官方企业微信"
           }
         },
-        "x": 503,
-        "y": 125
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 77,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "daughters"
-            }
+      "x": 700,
+      "y": 400
+    },
+    {
+      "id": 14,
+      "shape": "tree-node",
+      "width": 80,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "服务通知"
           }
         },
-        "x": 333,
-        "y": 405
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 78,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "0"
-            }
+      "x": 700,
+      "y": 450
+    },
+    {
+      "id": 15,
+      "shape": "tree-node",
+      "width": 80,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "老客户福利"
           }
         },
-        "x": 503,
-        "y": 181
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 79,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "age"
-            }
+      "x": 700,
+      "y": 500
+    },
+    {
+      "id": 16,
+      "shape": "tree-node",
+      "width": 100,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "不会乱发广告"
           }
         },
-        "x": 673,
-        "y": 153
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#FF6B6B"
+        }
       },
-      {
-        "id": 80,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": 30
-            }
+      "x": 700,
+      "y": 550
+    },
+    // 企业介绍的详细信息 (第3层)
+    {
+      "id": 19,
+      "shape": "tree-node",
+      "width": 100,
+      "height": 30,
+      "leaf": true,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "官方企业微信"
           }
         },
-        "x": 843,
-        "y": 153
+        "body": {
+          "fill": "#FFFFFF",
+          "stroke": "#4ECDC4"
+        }
       },
-      {
-        "id": 81,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "name"
-            }
-          }
-        },
-        "x": 673,
-        "y": 209
-      },
-      {
-        "id": 82,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "Sarah"
-            }
-          }
-        },
-        "x": 843,
-        "y": 209
-      },
-      {
-        "id": 83,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "1"
-            }
-          }
-        },
-        "x": 503,
-        "y": 293
-      },
-      {
-        "id": 84,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "age"
-            }
-          }
-        },
-        "x": 673,
-        "y": 265
-      },
-      {
-        "id": 85,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": 6
-            }
-          }
-        },
-        "x": 843,
-        "y": 265
-      },
-      {
-        "id": 86,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "name"
-            }
-          }
-        },
-        "x": 673,
-        "y": 321
-      },
-      {
-        "id": 87,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "Cynthia"
-            }
-          }
-        },
-        "x": 843,
-        "y": 321
-      },
-      {
-        "id": 88,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "2"
-            }
-          }
-        },
-        "x": 503,
-        "y": 405
-      },
-      {
-        "id": 89,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "age"
-            }
-          }
-        },
-        "x": 673,
-        "y": 377
-      },
-      {
-        "id": 90,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": 15
-            }
-          }
-        },
-        "x": 843,
-        "y": 377
-      },
-      {
-        "id": 91,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "name"
-            }
-          }
-        },
-        "x": 673,
-        "y": 433
-      },
-      {
-        "id": 92,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "Linda"
-            }
-          }
-        },
-        "x": 843,
-        "y": 433
-      },
-      {
-        "id": 93,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "3"
-            }
-          }
-        },
-        "x": 503,
-        "y": 517
-      },
-      {
-        "id": 94,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "age"
-            }
-          }
-        },
-        "x": 673,
-        "y": 489
-      },
-      {
-        "id": 95,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": 7
-            }
-          }
-        },
-        "x": 843,
-        "y": 489
-      },
-      {
-        "id": 96,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "name"
-            }
-          }
-        },
-        "x": 673,
-        "y": 545
-      },
-      {
-        "id": 97,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "Barbara"
-            }
-          }
-        },
-        "x": 843,
-        "y": 545
-      },
-      {
-        "id": 98,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "4"
-            }
-          }
-        },
-        "x": 503,
-        "y": 629
-      },
-      {
-        "id": 99,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "age"
-            }
-          }
-        },
-        "x": 673,
-        "y": 601
-      },
-      {
-        "id": 100,
-        "shape": "tree-node",
-        "width": 28,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": 18
-            }
-          }
-        },
-        "x": 843,
-        "y": 601
-      },
-      {
-        "id": 101,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": false,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "name"
-            }
-          }
-        },
-        "x": 673,
-        "y": 657
-      },
-      {
-        "id": 102,
-        "shape": "tree-node",
-        "width": 70,
-        "height": 26,
-        "leaf": true,
-        "attrs": {
-          "label": {
-            "textWrap": {
-              "text": "Margaret"
-            }
-          }
-        },
-        "x": 843,
-        "y": 657
-      }
-    ],
-    "edges": [
-      {
-        "source": 69,
-        "target": 70,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 70,
-        "target": 71,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 71,
-        "target": 72,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 70,
-        "target": 73,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 73,
-        "target": 74,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 70,
-        "target": 75,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 75,
-        "target": 76,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 70,
-        "target": 77,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 77,
-        "target": 78,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 78,
-        "target": 79,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 79,
-        "target": 80,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 78,
-        "target": 81,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 81,
-        "target": 82,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 77,
-        "target": 83,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 83,
-        "target": 84,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 84,
-        "target": 85,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 83,
-        "target": 86,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 86,
-        "target": 87,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 77,
-        "target": 88,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 88,
-        "target": 89,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 89,
-        "target": 90,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 88,
-        "target": 91,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 91,
-        "target": 92,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 77,
-        "target": 93,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 93,
-        "target": 94,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 94,
-        "target": 95,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 93,
-        "target": 96,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 96,
-        "target": 97,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 77,
-        "target": 98,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 98,
-        "target": 99,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 99,
-        "target": 100,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 98,
-        "target": 101,
-        "shape": "tree-edge"
-      },
-      {
-        "source": 101,
-        "target": 102,
-        "shape": "tree-edge"
-      }
-    ]
-  }
+      "x": 700,
+      "y": 600
+    }
+  ],
+  "edges": [
+    // 根节点到主分支的连接
+    {
+      "source": 1,
+      "target": 2,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 1,
+      "target": 17,
+      "shape": "tree-edge"
+    },
+    // 电联加微分支的连接
+    {
+      "source": 2,
+      "target": 3,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 2,
+      "target": 9,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 2,
+      "target": 12,
+      "shape": "tree-edge"
+    },
+    // 企微介绍分支的连接
+    {
+      "source": 17,
+      "target": 18,
+      "shape": "tree-edge"
+    },
+    // 邀约加微的详细信息连接
+    {
+      "source": 3,
+      "target": 4,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 3,
+      "target": 5,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 3,
+      "target": 6,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 3,
+      "target": 7,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 3,
+      "target": 8,
+      "shape": "tree-edge"
+    },
+    // 异议处理1的详细信息连接
+    {
+      "source": 9,
+      "target": 10,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 9,
+      "target": 11,
+      "shape": "tree-edge"
+    },
+    // 异议处理2的详细信息连接
+    {
+      "source": 12,
+      "target": 13,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 12,
+      "target": 14,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 12,
+      "target": 15,
+      "shape": "tree-edge"
+    },
+    {
+      "source": 12,
+      "target": 16,
+      "shape": "tree-edge"
+    },
+    // 企业介绍的详细信息连接
+    {
+      "source": 18,
+      "target": 19,
+      "shape": "tree-edge"
+    }
+  ]
+}
 
 // 定义类型
 interface MindMapNode {
@@ -878,7 +719,7 @@ interface MindMapEdge {
   shape: string
 }
 
-// 初始化思维导图
+  // 初始化思维导图
 export function initMindMap() {
   const container = document.getElementById('container')
   if (!container) {
@@ -892,16 +733,27 @@ export function initMindMap() {
     async: true,
     interacting: false,
     connecting: {
-      anchor: 'orth',
-      connector: 'rounded',
-      connectionPoint: 'boundary',
+      anchor: 'center',
+      connector: 'normal',
+      connectionPoint: 'anchor',
       router: {
-        name: 'er',
-        args: {
-          offset: 24,
-          direction: 'H',
-        },
+        name: 'normal',
       },
+      // 配置连线从源节点的右侧连接点开始
+      sourceAnchor: {
+        name: 'right',
+      },
+      targetAnchor: {
+        name: 'left',
+      },
+    },
+    grid: {
+      visible: true,
+      type: 'dot',
+      size: 10,
+    },
+    background: {
+      color: '#FAFAFA',
     },
   })
 
@@ -928,7 +780,19 @@ export function initMindMap() {
   const nodes = mindmap.nodes.map(({ leaf, ...metadata }: MindMapNode) => {
     const node = new TreeNode({
       ...metadata,
-      id: metadata.id.toString() // 将number转换为string
+      id: metadata.id.toString(), // 将number转换为string
+      ports: {
+        items: [
+          {
+            id: 'right',
+            group: 'right',
+          },
+          {
+            id: 'left',
+            group: 'left',
+          },
+        ],
+      },
     })
     if (leaf) {
       node.toggleButtonVisibility(!leaf) // 修复逻辑
@@ -938,8 +802,15 @@ export function initMindMap() {
   const edges = mindmap.edges.map(
     (edge: MindMapEdge) =>
       new TreeEdge({
-        source: edge.source.toString(), // 转换为string
-        target: edge.target.toString(), // 转换为string
+        source: { cell: edge.source.toString(), port: 'right' },
+        target: { cell: edge.target.toString(), port: 'left' },
+        attrs: {
+          line: {
+            stroke: '#A2B1C3',
+            strokeWidth: 1,
+            targetMarker: null,
+          },
+        },
       }),
   )
 
