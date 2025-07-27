@@ -300,7 +300,7 @@ function getChildNodes(nodeId: string): MindMapNode[] {
 
 
 
-// 自动布局算法
+// 自动布局算法 - 优化版本，使用更紧凑的间距
 function autoLayout() {
   if (!graph) return
   
@@ -308,36 +308,66 @@ function autoLayout() {
   const rootNode = mindmap.nodes.find(node => !mindmap.edges.some(edge => edge.target === node.id))
   if (!rootNode) return
   
-  // 递归布局函数
-  function layoutSubtree(nodeId: number, x: number, y: number, level: number): number {
-    const node = mindmap.nodes.find(n => n.id === nodeId)
-    if (!node) return y
+  // 计算每个子树需要的高度 - 使用更紧凑的间距
+  function calculateSubtreeHeight(nodeId: number): number {
+    const children = getChildNodes(nodeId.toString())
+    if (children.length === 0) {
+      return 50 // 叶子节点高度，从60减少到50
+    }
     
-    // 设置当前节点位置
-    node.x = x
-    node.y = y
+    let totalChildrenHeight = 0
+    children.forEach(child => {
+      totalChildrenHeight += calculateSubtreeHeight(child.id)
+    })
+    
+    // 使用更紧凑的子节点间距，从80减少到50
+    const spacing = children.length > 1 ? (children.length - 1) * 50 : 0
+    return totalChildrenHeight + spacing
+  }
+  
+  // 递归布局函数
+  function layoutSubtree(nodeId: number, x: number, startY: number, level: number): number {
+    const node = mindmap.nodes.find(n => n.id === nodeId)
+    if (!node) return startY
     
     // 获取子节点
     const children = getChildNodes(nodeId.toString())
+    
     if (children.length === 0) {
-      return y + 80 // 叶子节点间距
+      // 叶子节点
+      node.x = x
+      node.y = startY
+      return startY + 50 // 返回下一个节点的起始位置，从60减少到50
     }
     
-    // 计算子树所需的总高度
-    let childY = y - (children.length - 1) * 40 // 子节点间距为80，中心对齐
-    let maxY = y
+    // 计算所有子节点需要的总高度
+    const subtreeHeight = calculateSubtreeHeight(nodeId)
     
-    children.forEach((child) => {
-      const endY = layoutSubtree(child.id, x + 200, childY, level + 1)
-      maxY = Math.max(maxY, endY)
-      childY = endY
+    // 当前节点位置设置在子树的中心
+    const nodeY = startY + subtreeHeight / 2
+    node.x = x
+    node.y = nodeY
+    
+    // 布局子节点
+    let currentY = startY
+    children.forEach(child => {
+      const childHeight = calculateSubtreeHeight(child.id)
+      
+      // 递归布局子节点，保持200px的横向间距
+      layoutSubtree(child.id, x + 200, currentY, level + 1)
+      
+      currentY += childHeight + 50 // 使用50px的纵向间距
     })
     
-    return maxY
+    return startY + subtreeHeight
   }
   
-  // 从根节点开始布局
-  layoutSubtree(rootNode.id, 100, 300, 0)
+  // 计算整个思维导图需要的高度
+  const totalHeight = calculateSubtreeHeight(rootNode.id)
+  
+  // 从适当的起始位置开始布局，确保内容居中
+  const startY = Math.max(50, 300 - totalHeight / 2)
+  layoutSubtree(rootNode.id, 100, startY, 0)
   
   // 更新图形中的节点位置
   mindmap.nodes.forEach(nodeData => {
@@ -695,8 +725,7 @@ function deleteNode(nodeId: string) {
     }
   }
   
-  // 执行自动布局
-  autoLayout()
+  // 删除节点后不重新布局，保持其他节点位置不变
 }
 
 const mindmap = {
