@@ -2,10 +2,13 @@ import { Graph, Node, Edge, Shape, Cell } from '@antv/x6'
 
 // 定义节点
 class TreeNode extends Node {
-  private collapsed: boolean = false
-  private hasChildren: boolean = false
+  constructor(...args) {
+    super(...args)
+    this.collapsed = false
+    this.hasChildren = false
+  }
 
-  protected postprocess() {
+  postprocess() {
     this.toggleCollapse(false)
   }
 
@@ -13,18 +16,18 @@ class TreeNode extends Node {
     return this.collapsed
   }
 
-  setHasChildren(hasChildren: boolean) {
+  setHasChildren(hasChildren) {
     this.hasChildren = hasChildren
     this.toggleButtonVisibility(hasChildren)
   }
 
-  toggleButtonVisibility(visible: boolean) {
+  toggleButtonVisibility(visible) {
     this.attr('buttonGroup', {
       display: visible ? 'block' : 'none',
     })
   }
 
-  toggleCollapse(collapsed?: boolean) {
+  toggleCollapse(collapsed) {
     const target = collapsed == null ? !this.collapsed : collapsed
     if (!target) {
       // 展开状态：显示减号 - 居中显示
@@ -174,7 +177,7 @@ TreeNode.config({
 // 定义边
 class TreeEdge extends Shape.Edge {
   isHidden() {
-    const node = this.getTargetNode() as TreeNode
+    const node = this.getTargetNode()
     return !node || !node.isVisible()
   }
 }
@@ -201,13 +204,13 @@ Node.registry.register('tree-node', TreeNode, true)
 Edge.registry.register('tree-edge', TreeEdge, true)
 
 // 初始化画布
-let graph: Graph | null = null
+let graph = null
 
 // 右键菜单相关变量
-let contextMenu: HTMLElement | null = null
+let contextMenu = null
 
 // 显示右键菜单
-function showContextMenu(e: MouseEvent, node: TreeNode) {
+function showContextMenu(e, node) {
   // 移除已存在的菜单
   hideContextMenu()
   
@@ -271,18 +274,18 @@ function hideContextMenu() {
 }
 
 // 生成新的节点ID
-function generateNewNodeId(): number {
+function generateNewNodeId() {
   const existingIds = mindmap.nodes.map(node => node.id)
   return Math.max(...existingIds) + 1
 }
 
 // 获取节点在mindmap数据中的索引
-function getNodeDataIndex(nodeId: string): number {
+function getNodeDataIndex(nodeId) {
   return mindmap.nodes.findIndex(node => node.id === parseInt(nodeId))
 }
 
 // 获取节点的父节点
-function getParentNode(nodeId: string): MindMapNode | null {
+function getParentNode(nodeId) {
   const parentEdge = mindmap.edges.find(edge => edge.target === parseInt(nodeId))
   if (parentEdge) {
     return mindmap.nodes.find(node => node.id === parentEdge.source) || null
@@ -291,14 +294,12 @@ function getParentNode(nodeId: string): MindMapNode | null {
 }
 
 // 获取节点的子节点
-function getChildNodes(nodeId: string): MindMapNode[] {
+function getChildNodes(nodeId) {
   const childEdges = mindmap.edges.filter(edge => edge.source === parseInt(nodeId))
   return childEdges.map(edge => 
     mindmap.nodes.find(node => node.id === edge.target)
-  ).filter(node => node !== undefined) as MindMapNode[]
+  ).filter(node => node !== undefined)
 }
-
-
 
 // 自动布局算法 - 优化版本，使用更紧凑的间距
 function autoLayout() {
@@ -309,7 +310,7 @@ function autoLayout() {
   if (!rootNode) return
   
   // 计算每个子树需要的高度 - 使用更紧凑的间距
-  function calculateSubtreeHeight(nodeId: number): number {
+  function calculateSubtreeHeight(nodeId) {
     const children = getChildNodes(nodeId.toString())
     if (children.length === 0) {
       return 50 // 叶子节点高度，从60减少到50
@@ -326,7 +327,7 @@ function autoLayout() {
   }
   
   // 递归布局函数
-  function layoutSubtree(nodeId: number, x: number, startY: number, level: number): number {
+  function layoutSubtree(nodeId, x, startY, level) {
     const node = mindmap.nodes.find(n => n.id === nodeId)
     if (!node) return startY
     
@@ -371,7 +372,7 @@ function autoLayout() {
   
   // 更新图形中的节点位置
   mindmap.nodes.forEach(nodeData => {
-    const graphNode = graph!.getCellById(nodeData.id.toString()) as TreeNode
+    const graphNode = graph.getCellById(nodeData.id.toString())
     if (graphNode) {
       graphNode.setPosition(nodeData.x, nodeData.y)
     }
@@ -426,7 +427,7 @@ function updateContainerSize() {
 }
 
 // 根据文本长度计算节点高度
-function calculateNodeHeight(text: string): number {
+function calculateNodeHeight(text) {
   const baseHeight = 40
   const maxWidth = 100 // 与textWrap width保持一致
   const fontSize = 12
@@ -439,7 +440,7 @@ function calculateNodeHeight(text: string): number {
 }
 
 // 计算新节点的位置（临时位置，会被布局算法重新计算）
-function calculateNewNodePosition(parentNode: MindMapNode, isChild: boolean = true): { x: number, y: number } {
+function calculateNewNodePosition(parentNode, isChild = true) {
   if (isChild) {
     // 添加子节点：在父节点右侧
     const existingChildren = getChildNodes(parentNode.id.toString())
@@ -458,7 +459,7 @@ function calculateNewNodePosition(parentNode: MindMapNode, isChild: boolean = tr
 }
 
 // 编辑节点文本
-function editNodeText(nodeId: string) {
+function editNodeText(nodeId) {
   const nodeIndex = getNodeDataIndex(nodeId)
   if (nodeIndex === -1) return
   
@@ -475,7 +476,7 @@ function editNodeText(nodeId: string) {
     mindmap.nodes[nodeIndex].height = newHeight
     
     // 更新图形
-    const graphNode = graph?.getCellById(nodeId) as TreeNode
+    const graphNode = graph?.getCellById(nodeId)
     if (graphNode) {
       graphNode.attr('label/textWrap/text', trimmedText)
       graphNode.resize(mindmap.nodes[nodeIndex].width, newHeight)
@@ -490,7 +491,7 @@ function editNodeText(nodeId: string) {
 }
 
 // 添加子节点
-function addChildNode(parentId: string) {
+function addChildNode(parentId) {
   const parentIndex = getNodeDataIndex(parentId)
   if (parentIndex === -1) return
   
@@ -502,7 +503,7 @@ function addChildNode(parentId: string) {
   if (newText === null) return
   
   // 创建新节点数据
-  const newNodeData: MindMapNode = {
+  const newNodeData = {
     id: newNodeId,
     shape: 'tree-node',
     width: 120,
@@ -552,8 +553,7 @@ function addChildNode(parentId: string) {
   }
   
   // 添加到数据
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  mindmap.nodes.push(newNodeData as any)
+  mindmap.nodes.push(newNodeData)
   mindmap.edges.push({
     source: parseInt(parentId),
     target: newNodeId,
@@ -586,7 +586,7 @@ function addChildNode(parentId: string) {
   newGraphNode.setHasChildren(hasChildren)
   
   // 添加节点到图形
-  graph!.addNode(newGraphNode)
+  graph.addNode(newGraphNode)
   
   // 创建新的连线
   const sourceNode = mindmap.nodes.find(node => node.id === parseInt(parentId))
@@ -613,11 +613,11 @@ function addChildNode(parentId: string) {
       },
     })
     
-    graph!.addEdge(newEdge)
+    graph.addEdge(newEdge)
   }
   
   // 更新父节点的展开按钮显示
-  const parentGraphNode = graph!.getCellById(parentId) as TreeNode
+  const parentGraphNode = graph.getCellById(parentId)
   if (parentGraphNode) {
     parentGraphNode.setHasChildren(true)
   }
@@ -630,7 +630,7 @@ function addChildNode(parentId: string) {
 }
 
 // 添加同级节点
-function addSiblingNode(nodeId: string) {
+function addSiblingNode(nodeId) {
   const nodeIndex = getNodeDataIndex(nodeId)
   if (nodeIndex === -1) return
   
@@ -649,7 +649,7 @@ function addSiblingNode(nodeId: string) {
   if (newText === null) return
   
   // 创建新节点数据（复制当前节点的样式）
-  const newNodeData: MindMapNode = {
+  const newNodeData = {
     id: newNodeId,
     shape: 'tree-node',
     width: currentNode.width,
@@ -668,8 +668,7 @@ function addSiblingNode(nodeId: string) {
   }
   
   // 添加到数据
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  mindmap.nodes.push(newNodeData as any)
+  mindmap.nodes.push(newNodeData)
   mindmap.edges.push({
     source: parentNode.id,
     target: newNodeId,
@@ -699,7 +698,7 @@ function addSiblingNode(nodeId: string) {
   newGraphNode.setHasChildren(hasChildren)
   
   // 添加节点到图形
-  graph!.addNode(newGraphNode)
+  graph.addNode(newGraphNode)
   
   // 创建新的连线
   if (parentNode) {
@@ -725,7 +724,7 @@ function addSiblingNode(nodeId: string) {
       },
     })
     
-    graph!.addEdge(newEdge)
+    graph.addEdge(newEdge)
   }
   
   // 执行自动布局
@@ -736,7 +735,7 @@ function addSiblingNode(nodeId: string) {
 }
 
 // 删除节点
-function deleteNode(nodeId: string) {
+function deleteNode(nodeId) {
   // 检查是否为根节点
   const nodeIndex = getNodeDataIndex(nodeId)
   if (nodeIndex === -1) return
@@ -751,7 +750,7 @@ function deleteNode(nodeId: string) {
   if (!confirmDelete) return
   
   // 递归收集要删除的节点（包括所有子节点）
-  function collectNodesToDelete(id: string): string[] {
+  function collectNodesToDelete(id) {
     const children = getChildNodes(id)
     let toDelete = [id]
     
@@ -777,9 +776,9 @@ function deleteNode(nodeId: string) {
   
   // 从图形中删除节点和边
   nodesToDelete.forEach(id => {
-    const node = graph!.getCellById(id)
+    const node = graph.getCellById(id)
     if (node) {
-      graph!.removeCell(node)
+      graph.removeCell(node)
     }
   })
   
@@ -792,7 +791,7 @@ function deleteNode(nodeId: string) {
     }
     
     // 更新父节点的展开按钮显示
-    const parentGraphNode = graph!.getCellById(parentNode.id.toString()) as TreeNode
+    const parentGraphNode = graph.getCellById(parentNode.id.toString())
     if (parentGraphNode) {
       parentGraphNode.setHasChildren(false)
     }
@@ -805,7 +804,7 @@ function deleteNode(nodeId: string) {
   saveMindMapToStorage()
 }
 
-const mindmap: MindMapData = {
+const mindmap = {
   "nodes": [
     // 根节点：创U速赢 (第0层)
     {
@@ -1319,47 +1318,13 @@ const mindmap: MindMapData = {
   ]
 }
 
-// 定义类型
-interface MindMapNode {
-  id: number
-  shape: string
-  width: number
-  height: number
-  leaf: boolean
-  attrs: {
-    label: {
-      textWrap: {
-        text: string | number | boolean
-      }
-      fill?: string
-    }
-    body?: {
-      fill: string
-      stroke: string
-    }
-  }
-  x: number
-  y: number
-}
-
-interface MindMapEdge {
-  source: number
-  target: number
-  shape: string
-}
-
-interface MindMapData {
-  nodes: MindMapNode[]
-  edges: MindMapEdge[]
-}
-
 // localStorage相关常量
 const MINDMAP_STORAGE_KEY = 'mindmap_data'
 
 // 保存mindmap数据到localStorage
 function saveMindMapToStorage() {
   try {
-    const data: MindMapData = {
+    const data = {
       nodes: [...mindmap.nodes],
       edges: [...mindmap.edges]
     }
@@ -1371,11 +1336,11 @@ function saveMindMapToStorage() {
 }
 
 // 从localStorage加载mindmap数据
-function loadMindMapFromStorage(): MindMapData | null {
+function loadMindMapFromStorage() {
   try {
     const savedData = localStorage.getItem(MINDMAP_STORAGE_KEY)
     if (savedData) {
-      const data: MindMapData = JSON.parse(savedData)
+      const data = JSON.parse(savedData)
       console.log('Mind map data loaded from localStorage')
       return data
     }
@@ -1400,7 +1365,7 @@ function initMindMapData() {
   }
 }
 
-  // 初始化思维导图
+// 初始化思维导图
 export function initMindMap() {
   const container = document.getElementById('container')
   if (!container) {
@@ -1466,14 +1431,14 @@ export function initMindMap() {
   })
 
   // 添加节点折叠事件监听
-  graph.on('node:collapse', ({ node }: { node: TreeNode }) => {
+  graph.on('node:collapse', ({ node }) => {
     node.toggleCollapse()
     const collapsed = node.isCollapsed()
-    const run = (pre: TreeNode) => {
-      const succ = graph!.getSuccessors(pre, { distance: 1 })
+    const run = (pre) => {
+      const succ = graph.getSuccessors(pre, { distance: 1 })
       if (succ) {
-        succ.forEach((node: Cell) => {
-          const treeNode = node as TreeNode
+        succ.forEach((node) => {
+          const treeNode = node
           treeNode.toggleVisible(!collapsed)
           if (!treeNode.isCollapsed()) {
             run(treeNode)
@@ -1485,7 +1450,7 @@ export function initMindMap() {
   })
 
   // 添加右键菜单事件监听
-  graph.on('node:contextmenu', ({ e, node }: { e: MouseEvent, node: TreeNode }) => {
+  graph.on('node:contextmenu', ({ e, node }) => {
     e.preventDefault()
     showContextMenu(e, node)
   })
@@ -1496,7 +1461,7 @@ export function initMindMap() {
   })
 
   const start = new Date().getTime()
-  const nodes = mindmap.nodes.map(({ ...metadata }: MindMapNode) => {
+  const nodes = mindmap.nodes.map(({ ...metadata }) => {
     const node = new TreeNode({
       ...metadata,
       id: metadata.id.toString(), // 将number转换为string
@@ -1521,7 +1486,7 @@ export function initMindMap() {
     return node
   })
   const edges = mindmap.edges.map(
-    (edge: MindMapEdge) => {
+    (edge) => {
       // 根据源节点确定连线颜色
       let strokeColor = '#A2B1C3' // 默认颜色
       
@@ -1564,4 +1529,4 @@ export function initMindMap() {
 }
 
 // 导出graph实例供外部使用
-export { graph }
+export { graph } 

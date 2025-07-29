@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { initMindMap } from './mind'
+import { initMindMap } from './mind.js'
 
 const containerRef = ref<HTMLDivElement>()
 
