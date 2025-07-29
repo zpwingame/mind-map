@@ -46,6 +46,45 @@ class TreeNode extends Node {
   }
 }
 
+// 定义自定义节点（包含三个功能按钮）
+class CustomNode extends Node {
+  constructor(...args) {
+    super(...args)
+    this.collapsed = false
+    this.hasChildren = false
+  }
+
+  postprocess() {
+    this.toggleCollapse(false)
+  }
+
+  isCollapsed() {
+    return this.collapsed
+  }
+
+  setHasChildren(hasChildren) {
+    this.hasChildren = hasChildren
+  }
+
+  toggleCollapse(collapsed) {
+    const target = collapsed == null ? !this.collapsed : collapsed
+    if (!target) {
+      // 展开状态：显示减号
+      this.attr('collapseSign', {
+        d: 'M -3 0 3 0',
+        strokeWidth: 1.8,
+      })
+    } else {
+      // 收起状态：显示加号
+      this.attr('collapseSign', {
+        d: 'M -3 0 3 0 M 0 -3 0 3',
+        strokeWidth: 1.6,
+      })
+    }
+    this.collapsed = target
+  }
+}
+
 TreeNode.config({
   zIndex: 2,
   markup: [
@@ -174,6 +213,206 @@ TreeNode.config({
   },
 })
 
+// 配置自定义节点
+CustomNode.config({
+  zIndex: 2,
+  markup: [
+    {
+      tagName: 'rect',
+      selector: 'body',
+    },
+    {
+      tagName: 'text',
+      selector: 'label',
+    },
+    // 三个功能按钮组
+    {
+      tagName: 'g',
+      selector: 'buttonGroup',
+      children: [
+        // 展开收起按钮
+        {
+          tagName: 'circle',
+          selector: 'collapseButton',
+          attrs: {
+            'pointer-events': 'visiblePainted',
+          },
+        },
+        {
+          tagName: 'path',
+          selector: 'collapseSign',
+          attrs: {
+            fill: 'none',
+            'pointer-events': 'none',
+          },
+        },
+        // 添加子节点按钮
+        {
+          tagName: 'circle',
+          selector: 'addChildButton',
+          attrs: {
+            'pointer-events': 'visiblePainted',
+          },
+        },
+        {
+          tagName: 'path',
+          selector: 'addChildSign',
+          attrs: {
+            fill: 'none',
+            'pointer-events': 'none',
+            d: 'M -3 0 3 0 M 0 -3 0 3', // 加号
+          },
+        },
+        // 删除子节点按钮
+        {
+          tagName: 'circle',
+          selector: 'deleteButton',
+          attrs: {
+            'pointer-events': 'visiblePainted',
+          },
+        },
+        {
+          tagName: 'path',
+          selector: 'deleteSign',
+          attrs: {
+            fill: 'none',
+            'pointer-events': 'none',
+            d: 'M -3 0 3 0', // 减号
+          },
+        },
+      ],
+    },
+  ],
+  attrs: {
+    body: {
+      refWidth: '100%',
+      refHeight: '100%',
+      strokeWidth: 1,
+      fill: '#FFF3E0',
+      stroke: '#FF9800',
+      rx: 8,
+      ry: 8,
+    },
+    label: {
+      textWrap: {
+        width: 120,
+        height: '100%',
+        ellipsis: false,
+      },
+      textAnchor: 'middle',
+      textVerticalAnchor: 'middle',
+      refX: '50%',
+      refY: '50%',
+      fontSize: 12,
+      fill: '#333333',
+    },
+    buttonGroup: {
+      refX: '100%',
+      refY: '50%',
+    },
+    // 展开收起按钮
+    collapseButton: {
+      fill: '#FFFFFF',
+      stroke: '#2196F3',
+      strokeWidth: 1,
+      r: 8,
+      cx: 12,
+      cy: -15,
+      cursor: 'pointer',
+      event: 'custom:collapse',
+    },
+    collapseSign: {
+      refX: 12,
+      refY: -15,
+      stroke: '#2196F3',
+      strokeWidth: 1.6,
+    },
+    // 添加子节点按钮
+    addChildButton: {
+      fill: '#FFFFFF',
+      stroke: '#4CAF50',
+      strokeWidth: 1,
+      r: 8,
+      cx: 12,
+      cy: 0,
+      cursor: 'pointer',
+      event: 'custom:addChild',
+    },
+    addChildSign: {
+      refX: 12,
+      refY: 0,
+      stroke: '#4CAF50',
+      strokeWidth: 1.6,
+    },
+    // 删除按钮
+    deleteButton: {
+      fill: '#FFFFFF',
+      stroke: '#F44336',
+      strokeWidth: 1,
+      r: 8,
+      cx: 12,
+      cy: 15,
+      cursor: 'pointer',
+      event: 'custom:delete',
+    },
+    deleteSign: {
+      refX: 12,
+      refY: 15,
+      stroke: '#F44336',
+      strokeWidth: 1.6,
+    },
+  },
+  // 定义连接点
+  ports: {
+    groups: {
+      right: {
+        position: {
+          name: 'absolute',
+          args: {
+            x: '100%',
+            y: '50%',
+          },
+        },
+        attrs: {
+          circle: {
+            r: 0,
+            fill: 'transparent',
+            stroke: 'transparent',
+          },
+        },
+        markup: [
+          {
+            tagName: 'circle',
+            selector: 'circle',
+          },
+        ],
+      },
+      left: {
+        position: {
+          name: 'absolute',
+          args: {
+            x: 0,
+            y: '50%',
+          },
+        },
+        attrs: {
+          circle: {
+            r: 0,
+            fill: 'transparent',
+            stroke: 'transparent',
+          },
+        },
+        markup: [
+          {
+            tagName: 'circle',
+            selector: 'circle',
+          },
+        ],
+      },
+    },
+  },
+})
+
 // 定义边
 class TreeEdge extends Shape.Edge {
   isHidden() {
@@ -201,6 +440,7 @@ TreeEdge.config({
 
 // 注册
 Node.registry.register('tree-node', TreeNode, true)
+Node.registry.register('custom-node', CustomNode, true)
 Edge.registry.register('tree-edge', TreeEdge, true)
 
 // 初始化画布
@@ -233,6 +473,13 @@ function showContextMenu(e, node) {
     { text: '添加子节点', action: () => addChildNode(node.id) },
     { text: '删除节点', action: () => deleteNode(node.id) }
   ]
+  
+  // 如果节点有子节点，添加插入自定义节点的选项
+  const childNodes = getChildNodes(node.id.toString())
+
+  // if (childNodes.length > 0) {
+  //   menuItems.splice(3, 0, { text: '插入自定义节点', action: () => showInsertCustomNodeMenu(e, node.id.toString(), childNodes) })
+  // }
   
   menuItems.forEach(item => {
     const menuItem = document.createElement('div')
@@ -271,6 +518,64 @@ function hideContextMenu() {
     document.body.removeChild(contextMenu)
     contextMenu = null
   }
+}
+
+// 显示插入自定义节点的子菜单
+function showInsertCustomNodeMenu(e, parentId, childNodes) {
+
+  // 隐藏原来的菜单
+  hideContextMenu()
+  
+  // 创建子菜单
+  contextMenu = document.createElement('div')
+  contextMenu.style.position = 'absolute'
+  contextMenu.style.left = e.clientX + 'px'
+  contextMenu.style.top = e.clientY + 'px'
+  contextMenu.style.backgroundColor = 'white'
+  contextMenu.style.border = '1px solid #ccc'
+  contextMenu.style.borderRadius = '4px'
+  contextMenu.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)'
+  contextMenu.style.zIndex = '1000'
+  contextMenu.style.padding = '4px 0'
+  contextMenu.style.maxHeight = '200px'
+  contextMenu.style.overflowY = 'auto'
+  
+  // 添加标题
+  const title = document.createElement('div')
+  title.textContent = '选择要插入的位置:'
+  title.style.padding = '8px 16px'
+  title.style.fontSize = '12px'
+  title.style.color = '#666'
+  title.style.borderBottom = '1px solid #eee'
+  title.style.fontWeight = 'bold'
+  contextMenu.appendChild(title)
+  
+  // 为每个子节点添加菜单项
+  childNodes.forEach(child => {
+    const menuItem = document.createElement('div')
+    menuItem.textContent = `在 "${child.attrs.label.textWrap.text}" 前插入`
+    menuItem.style.padding = '8px 16px'
+    menuItem.style.cursor = 'pointer'
+    menuItem.style.fontSize = '14px'
+    menuItem.style.color = '#333'
+    
+    menuItem.addEventListener('mouseenter', () => {
+      menuItem.style.backgroundColor = '#f5f5f5'
+    })
+    
+    menuItem.addEventListener('mouseleave', () => {
+      menuItem.style.backgroundColor = 'white'
+    })
+    
+    menuItem.addEventListener('click', () => {
+      insertCustomNodeBetween(parentId, child.id.toString())
+      hideContextMenu()
+    })
+    
+    contextMenu.appendChild(menuItem)
+  })
+  
+  document.body.appendChild(contextMenu)
 }
 
 // 生成新的节点ID
@@ -505,7 +810,7 @@ function addChildNode(parentId) {
   // 创建新节点数据
   const newNodeData = {
     id: newNodeId,
-    shape: 'tree-node',
+    shape: 'custom-node',
     width: 120,
     height: calculateNodeHeight(newText.trim() || '新节点'),
     leaf: true,
@@ -564,7 +869,7 @@ function addChildNode(parentId) {
   mindmap.nodes[parentIndex].leaf = false
   
   // 创建新的图形节点
-  const newGraphNode = new TreeNode({
+  const newGraphNode = new CustomNode({
     ...newNodeData,
     id: newNodeData.id.toString(),
     ports: {
@@ -651,7 +956,7 @@ function addSiblingNode(nodeId) {
   // 创建新节点数据（复制当前节点的样式）
   const newNodeData = {
     id: newNodeId,
-    shape: 'tree-node',
+    shape: 'custom-node',
     width: currentNode.width,
     height: currentNode.height,
     leaf: true,
@@ -676,7 +981,7 @@ function addSiblingNode(nodeId) {
   })
   
   // 创建新的图形节点
-  const newGraphNode = new TreeNode({
+  const newGraphNode = new CustomNode({
     ...newNodeData,
     id: newNodeData.id.toString(),
     ports: {
@@ -732,6 +1037,179 @@ function addSiblingNode(nodeId) {
   
   // 保存到localStorage
   saveMindMapToStorage()
+}
+
+// 创建自定义节点
+function createCustomNode(nodeText) {
+  const newNodeId = generateNewNodeId()
+  
+  // 创建新的自定义节点数据
+  const newNodeData = {
+    id: newNodeId,
+    shape: 'custom-node',
+    width: 140,
+    height: calculateNodeHeight(nodeText.trim() || '自定义节点'),
+    leaf: false,
+    attrs: {
+      label: {
+        textWrap: {
+          text: nodeText.trim() || '自定义节点'
+        }
+      }
+    },
+    x: 0, // 临时位置，会被布局算法重新计算
+    y: 0
+  }
+  
+  return newNodeData
+}
+
+// 在两个节点之间插入自定义节点
+function insertCustomNodeBetween(parentId, childId) {
+  const newText = prompt('请输入自定义节点文本:', '自定义节点')
+  if (newText === null) return
+  
+  // 创建自定义节点
+  const customNodeData = createCustomNode(newText)
+  
+  // 添加到数据
+  mindmap.nodes.push(customNodeData)
+  
+  // 找到原来的连接边并删除
+  const edgeIndex = mindmap.edges.findIndex(edge => 
+    edge.source === parseInt(parentId) && edge.target === parseInt(childId)
+  )
+  
+  if (edgeIndex !== -1) {
+    mindmap.edges.splice(edgeIndex, 1)
+  }
+  
+  // 添加新的连接边：parent -> custom -> child
+  mindmap.edges.push({
+    source: parseInt(parentId),
+    target: customNodeData.id,
+    shape: 'tree-edge'
+  })
+  
+  mindmap.edges.push({
+    source: customNodeData.id,
+    target: parseInt(childId),
+    shape: 'tree-edge'
+  })
+  
+  // 从图形中删除原来的边
+  const edges = graph.getEdges()
+  const edgeToRemove = edges.find(edge => 
+    edge.getSourceCellId() === parentId && edge.getTargetCellId() === childId
+  )
+  if (edgeToRemove) {
+    graph.removeCell(edgeToRemove)
+  }
+  
+  // 创建新的图形节点
+  const newGraphNode = new CustomNode({
+    ...customNodeData,
+    id: customNodeData.id.toString(),
+    ports: {
+      items: [
+        {
+          id: 'right',
+          group: 'right',
+        },
+        {
+          id: 'left',
+          group: 'left',
+        },
+      ],
+    },
+  })
+  
+  // 添加节点到图形
+  graph.addNode(newGraphNode)
+  
+  // 创建新的连线
+  const parentNode = mindmap.nodes.find(node => node.id === parseInt(parentId))
+  let strokeColor = '#A2B1C3' // 默认颜色
+  if (parentNode && parentNode.attrs.body) {
+    const bodyFill = parentNode.attrs.body.fill
+    if (bodyFill === '#FF6B6B') {
+      strokeColor = '#FF6B6B'
+    } else if (bodyFill === '#4ECDC4') {
+      strokeColor = '#4ECDC4'
+    } else if (bodyFill === '#5F95FF') {
+      strokeColor = '#5F95FF'
+    }
+  }
+  
+  // parent -> custom
+  const edge1 = new TreeEdge({
+    source: { cell: parentId, port: 'right' },
+    target: { cell: customNodeData.id.toString(), port: 'left' },
+    attrs: {
+      line: {
+        stroke: strokeColor,
+        strokeWidth: 1,
+        targetMarker: null,
+      },
+    },
+  })
+  
+  // custom -> child (橙色，表示自定义节点的连线)
+  const edge2 = new TreeEdge({
+    source: { cell: customNodeData.id.toString(), port: 'right' },
+    target: { cell: childId, port: 'left' },
+    attrs: {
+      line: {
+        stroke: '#FF9800',
+        strokeWidth: 1,
+        targetMarker: null,
+      },
+    },
+  })
+  
+  graph.addEdge(edge1)
+  graph.addEdge(edge2)
+  
+  // 执行自动布局
+  autoLayout()
+  
+  // 保存到localStorage
+  saveMindMapToStorage()
+}
+
+// 处理自定义节点的按钮事件
+function handleCustomNodeEvent(eventType, nodeId) {
+  switch (eventType) {
+    case 'collapse':
+      // 展开收起功能
+      const node = graph.getCellById(nodeId)
+      if (node && node.toggleCollapse) {
+        node.toggleCollapse()
+        const collapsed = node.isCollapsed()
+        const run = (pre) => {
+          const succ = graph.getSuccessors(pre, { distance: 1 })
+          if (succ) {
+            succ.forEach((node) => {
+              const treeNode = node
+              treeNode.toggleVisible(!collapsed)
+              if (!treeNode.isCollapsed()) {
+                run(treeNode)
+              }
+            })
+          }
+        }
+        run(node)
+      }
+      break
+    case 'addChild':
+      // 添加子节点功能
+      addChildNode(nodeId)
+      break
+    case 'delete':
+      // 删除节点功能
+      deleteNode(nodeId)
+      break
+  }
 }
 
 // 删除节点
@@ -809,7 +1287,7 @@ const mindmap = {
     // 根节点：创U速赢 (第0层)
     {
       "id": 1,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 50,
       "leaf": false,
@@ -831,7 +1309,7 @@ const mindmap = {
     // 主分支1：电联加微 (第1层) - 红色分支
     {
       "id": 2,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 40,
       "leaf": false,
@@ -853,7 +1331,7 @@ const mindmap = {
     // 主分支2：企微介绍 (第1层) - 青色分支
     {
       "id": 17,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 40,
       "leaf": false,
@@ -875,7 +1353,7 @@ const mindmap = {
     // 电联加微子分支：邀约加微 (第2层) - 保持红色
     {
       "id": 3,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 40,
       "leaf": false,
@@ -897,7 +1375,7 @@ const mindmap = {
     // 电联加微子分支：异议处理1 (第2层) - 保持红色
     {
       "id": 9,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 60,
       "leaf": false,
@@ -919,7 +1397,7 @@ const mindmap = {
     // 电联加微子分支：异议处理2 (第2层) - 保持红色
     {
       "id": 12,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 60,
       "leaf": false,
@@ -941,7 +1419,7 @@ const mindmap = {
     // 企微介绍子分支：企业介绍 (第2层) - 保持青色
     {
       "id": 18,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 40,
       "leaf": false,
@@ -963,7 +1441,7 @@ const mindmap = {
     // 邀约加微的详细信息 (第3层) - 白色背景，红色边框
     {
       "id": 4,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -984,7 +1462,7 @@ const mindmap = {
     },
     {
       "id": 5,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1005,7 +1483,7 @@ const mindmap = {
     },
     {
       "id": 6,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1026,7 +1504,7 @@ const mindmap = {
     },
     {
       "id": 7,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1047,7 +1525,7 @@ const mindmap = {
     },
     {
       "id": 8,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1069,7 +1547,7 @@ const mindmap = {
     // 异议处理1的详细信息 (第3层) - 白色背景，红色边框
     {
       "id": 10,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1090,7 +1568,7 @@ const mindmap = {
     },
     {
       "id": 11,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1112,7 +1590,7 @@ const mindmap = {
     // 异议处理2的详细信息 (第3层) - 白色背景，红色边框
     {
       "id": 13,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1133,7 +1611,7 @@ const mindmap = {
     },
     {
       "id": 14,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1154,7 +1632,7 @@ const mindmap = {
     },
     {
       "id": 15,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1175,7 +1653,7 @@ const mindmap = {
     },
     {
       "id": 16,
-      "shape": "tree-node",
+      "shape": "custom-node",
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1197,7 +1675,8 @@ const mindmap = {
     // 企业介绍的详细信息 (第3层) - 白色背景，青色边框
     {
       "id": 19,
-      "shape": "tree-node",
+      "shape": "custom-node",
+      
       "width": 120,
       "height": 30,
       "leaf": true,
@@ -1215,6 +1694,23 @@ const mindmap = {
       },
       "x": 700,
       "y": 600
+    },
+    // 测试自定义节点
+    {
+      "id": 20,
+      "shape": "custom-node",
+      "width": 140,
+      "height": 50,
+      "leaf": false,
+      "attrs": {
+        "label": {
+          "textWrap": {
+            "text": "测试自定义节点"
+          }
+        }
+      },
+      "x": 300,
+      "y": 500
     }
   ],
   "edges": [
@@ -1313,6 +1809,12 @@ const mindmap = {
     {
       "source": 18,
       "target": 19,
+      "shape": "tree-edge"
+    },
+    // 测试自定义节点连接
+    {
+      "source": 1,
+      "target": 20,
       "shape": "tree-edge"
     }
   ]
@@ -1449,6 +1951,19 @@ export function initMindMap() {
     run(node)
   })
 
+  // 添加自定义节点按钮事件监听
+  graph.on('custom:collapse', ({ node }) => {
+    handleCustomNodeEvent('collapse', node.id)
+  })
+  
+  graph.on('custom:addChild', ({ node }) => {
+    handleCustomNodeEvent('addChild', node.id)
+  })
+  
+  graph.on('custom:delete', ({ node }) => {
+    handleCustomNodeEvent('delete', node.id)
+  })
+
   // 添加右键菜单事件监听
   graph.on('node:contextmenu', ({ e, node }) => {
     e.preventDefault()
@@ -1462,7 +1977,11 @@ export function initMindMap() {
 
   const start = new Date().getTime()
   const nodes = mindmap.nodes.map(({ ...metadata }) => {
-    const node = new TreeNode({
+    // 根据shape属性选择节点类型
+    const NodeClass = metadata.shape === 'custom-node' ? CustomNode : TreeNode
+
+    
+    const node = new NodeClass({
       ...metadata,
       id: metadata.id.toString(), // 将number转换为string
       ports: {
